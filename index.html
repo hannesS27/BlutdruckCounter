@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlutdruckCount</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #f7f7f7;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: #0056b3;
+        }
+        nav button {
+            flex: 1;
+            padding: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        nav button:hover {
+            background-color: #0056b3;
+        }
+        section {
+            padding: 20px;
+            display: none;
+        }
+        section.active {
+            display: block;
+        }
+        .counter {
+            text-align: center;
+        }
+        .counter button {
+            font-size: 24px;
+            padding: 15px 30px;
+            margin-top: 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .counter button:hover {
+            background-color: #218838;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .btn-save {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-save:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table th, table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        table th {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>BlutdruckCount</h1>
+    </header>
+    <nav>
+        <button onclick="showSection('counterSection')">Ohnmacht-Zähler</button>
+        <button onclick="showSection('bloodPressureSection')">Blutdruck</button>
+        <button onclick="showSection('faintingAnalysisSection')">Ohnmacht-Daten</button>
+        <button onclick="showSection('bpAnalysisSection')">Blutdruck-Daten</button>
+    </nav>
+    <section id="counterSection" class="active">
+        <div class="counter">
+            <h2>Ohnmacht-Zähler</h2>
+            <p>Aktuelle Anzahl: <span id="faintCount">0</span></p>
+            <button onclick="incrementFaintCount()">Zählen</button>
+        </div>
+    </section>
+    <section id="bloodPressureSection">
+        <h2>Blutdruck & Puls Eingeben</h2>
+        <div class="form-group">
+            <label for="systolic">Systolisch (mmHg)</label>
+            <input type="number" id="systolic" placeholder="z. B. 120">
+        </div>
+        <div class="form-group">
+            <label for="diastolic">Diastolisch (mmHg)</label>
+            <input type="number" id="diastolic" placeholder="z. B. 80">
+        </div>
+        <div class="form-group">
+            <label for="pulse">Puls (bpm)</label>
+            <input type="number" id="pulse" placeholder="z. B. 70">
+        </div>
+        <button class="btn-save" onclick="saveBloodPressure()">Speichern</button>
+    </section>
+    <section id="faintingAnalysisSection">
+        <h2>Ohnmacht-Daten</h2>
+        <ul id="faintingList"></ul>
+    </section>
+    <section id="bpAnalysisSection">
+        <h2>Blutdruck-Daten</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Systolisch</th>
+                    <th>Diastolisch</th>
+                    <th>Puls</th>
+                </tr>
+            </thead>
+            <tbody id="bpTableBody"></tbody>
+        </table>
+    </section>
+    <script>
+        let faintCount = 0;
+        const faintingList = [];
+        const bloodPressureData = [];
+
+        function showSection(sectionId) {
+            document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        function incrementFaintCount() {
+            faintCount++;
+            document.getElementById('faintCount').innerText = faintCount;
+            const timestamp = new Date().toLocaleString();
+            faintingList.push(timestamp);
+            updateFaintingList();
+        }
+
+        function updateFaintingList() {
+            const list = document.getElementById('faintingList');
+            list.innerHTML = '';
+            faintingList.forEach((entry, index) => {
+                const listItem = document.createElement('li');
+                listItem.innerText = `#${index + 1}: ${entry}`;
+                list.appendChild(listItem);
+            });
+        }
+
+        function saveBloodPressure() {
+            const systolic = document.getElementById('systolic').value;
+            const diastolic = document.getElementById('diastolic').value;
+            const pulse = document.getElementById('pulse').value;
+
+            if (systolic && diastolic && pulse) {
+                const timestamp = new Date().toLocaleString();
+                bloodPressureData.push({ systolic, diastolic, pulse, timestamp });
+                updateBloodPressureTable();
+                alert('Blutdruckdaten gespeichert!');
+            } else {
+                alert('Bitte alle Felder ausfüllen.');
+            }
+        }
+
+        function updateBloodPressureTable() {
+            const tableBody = document.getElementById('bpTableBody');
+            tableBody.innerHTML = '';
+            bloodPressureData.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${entry.timestamp}</td>
+                    <td>${entry.systolic}</td>
+                    <td>${entry.diastolic}</td>
+                    <td>${entry.pulse}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
